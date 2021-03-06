@@ -1,0 +1,4 @@
+#!/bin/sh
+set -e
+
+wget -q 'https://raw.githubusercontent.com/Zankoku-Okuno/sysup/master/bin/sysupup.sh' -O - | sh

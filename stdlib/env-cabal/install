@@ -1,0 +1,9 @@
+#!/bin/sh
+set -e
+
+dlUrl='https://raw.githubusercontent.com/Zankoku-Okuno/env-cabal/master/env-cabal.bash'
+installPath="$HOME/bin/env-cabal"
+
+echo "[FILE] $installPath"
+wget "$dlUrl" -O "$installPath"
+chmod +x "$installPath"
