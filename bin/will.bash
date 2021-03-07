@@ -30,9 +30,13 @@ main() {
 
 ###### Command Implementations ######
 
-libdir="$HOME/lib/will"
 datadir="${XDG_DATA_DIR:-$HOME/.local/share}/will"
-logdir="$datadir/logs"
+  libdir="$datadir/lib"
+  logdir="$datadir/logs"
+datadir="${XDG_DATA_DIR:-$HOME/.local/share}/will"
+confdir="${XDG_CONFIG_HOME:-$HOME/.config}/will"
+  sourcesfile="$confdir/sources"
+
 checkscript=check.sh
 collectionfile=collection
 alternatesfile=alternates
@@ -232,6 +236,47 @@ run_up1() {
   fi
 }
 
+run_update() {
+  local source tmpdir
+  local source_i=0
+  # set up working space
+  tmpdir="/tmp/will-$(date '+%Y-%m-%d-%H-%M-%S')"
+  trap "rm -rf $tmpdir" EXIT
+  mkdir -p "$tmpdir/new"
+  # build each source into the new library directory
+  while IFS= read -r source || [[ -n "$source" ]]; do
+    source="$(echo "$source" | sed -e 's/^\s*//' -e 's/\s*$//')"
+    case "$source" in
+      ''|'#'*) continue ;;
+      'git -d='*)
+        if [[ "$source_i" -gt 0 ]]; then die "unimplemented: multipe library sources"; fi
+        local repo subdir
+        repo="$(echo $source | cut -d' ' -f 3)"
+        subdir="$(echo "$source" | cut -d' ' -f 2 | cut -c 4-)"
+        git clone "$repo" "$tmpdir/$source_i"
+        cp -r "$tmpdir/$source_i/$subdir/"* "$tmpdir/new" # FIXME be smarter about merging libraries
+      ;;
+      'git '*) die "unimplemented: plain git source" ;;
+      'file '*) die "unimplemented: local file source" ;;
+      # TODO: a compressed file from the internet
+      *)
+        
+      ;;
+    esac
+    source_i=$((source_i + 1))
+  done <"$sourcesfile"
+  # backup old package library and install the new one
+  mkdir -p "$datadir"
+  rm -rf "$libdir.bak"
+  mv "$libdir" "$libdir.bak" 2>/dev/null || true
+  if mv "$tmpdir/new" "$libdir"; then
+    return 0
+  else
+    mv "$libdir.bak" "$libdir" 2>/dev/null || true
+    die "update failed"
+  fi
+}
+
 
 ###### Parse Arguments ######
 
@@ -280,7 +325,7 @@ getCmd() {
   fi
   local arg="${args[0]}"
   case "$arg" in
-    check|info|up)
+    check|info|up|update)
       command=$arg
       ;;
     *) die "unknown command '$arg'"
@@ -312,6 +357,11 @@ args_info() {
 args_up() {
   pkgs=("${args[@]}")
   args=()
+}
+args_update() {
+  if [[ "${#args[@]}" -gt 0 ]]; then
+    die "unrecognized update option '${args[0]}'"
+  fi
 }
 
 popArg() {

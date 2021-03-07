@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-bindir=$XDG_BINDIR
+bindir=$XDG_BIN_DIR
 if [ -z "$bindir" ]; then bindir="$WILL_BINDIR"; fi
 if [ -z "$bindir" ]; then bindir="$HOME/bin"; fi
 
