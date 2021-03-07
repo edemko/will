@@ -3,7 +3,7 @@ set -e
 
 # determine install directory
 bindir=$XDG_BINDIR # in anticipation that something like this will be added alongside/into the XDG Base Directory Specification
-if [ -z "$bindir" ]; then bindir="$SYSUP_BINDIR"; fi
+if [ -z "$bindir" ]; then bindir="$WILL_BINDIR"; fi
 if [ -z "$bindir" ]; then bindir="$HOME/bin"; fi
 
 # check usefulness of install directory
@@ -27,7 +27,7 @@ else
 fi
 
 # perform installation
-wget 'https://raw.githubusercontent.com/Zankoku-Okuno/sysup/master/bin/sysup.sh' -O "$bindir/sysup"
-chmod +x "$bindir/sysup"
+wget 'https://raw.githubusercontent.com/Zankoku-Okuno/will/master/bin/will.bash' -O "$bindir/will"
+chmod +x "$bindir/will"
 
 echo >&2 "[TODO] install the default repos and update the local copy"

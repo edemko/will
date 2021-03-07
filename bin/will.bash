@@ -30,8 +30,8 @@ main() {
 
 ###### Command Implementations ######
 
-libdir="$HOME/lib/sysup"
-datadir="${XDG_DATA_DIR:-$HOME/.local/share}/sysup"
+libdir="$HOME/lib/will"
+datadir="${XDG_DATA_DIR:-$HOME/.local/share}/will"
 logdir="$datadir/logs"
 checkscript=check.sh
 collectionfile=collection
@@ -41,10 +41,10 @@ installDepsfile=deps-up
 runDepsfile=deps
 submodulelist=manifest
 
-# TODO: update contents of the sysup lib folder based on a repos file
+# TODO: update contents of the will lib folder based on a repos file
 # while IFS= read -r LINE || [[ -n "$LINE" ]]; do
 #   echo "$LINE"
-# done <"$HOME/.sysup/repos"
+# done <"$HOME/.will/repos"
 
 run_info() {
   local exitCode=0
@@ -198,7 +198,7 @@ run_up1() {
       case "$dep" in
         ''|'#'*) continue ;;
         *)
-          run_check1 "$dep" || echo >&2 "$(guardTput bold)$(guardTput setaf 3)[WARN]$(guardTput sgr0) sysup $pkg: missing install dependency: $dep"
+          run_check1 "$dep" || echo >&2 "$(guardTput bold)$(guardTput setaf 3)[WARN]$(guardTput sgr0) will $pkg: missing install dependency: $dep"
         ;;
       esac
     done <"$libdir/$pkg/$installDepsfile"
@@ -225,7 +225,7 @@ run_up1() {
       case "$dep" in
         ''|'#'*) continue ;;
         *)
-          run_check1 "$dep" || echo >&2 "$(guardTput bold)$(guardTput setaf 3)[WARN]$(guardTput sgr0) sysup $pkg: missing runtime dependency: $dep"
+          run_check1 "$dep" || echo >&2 "$(guardTput bold)$(guardTput setaf 3)[WARN]$(guardTput sgr0) will $pkg: missing runtime dependency: $dep"
         ;;
       esac
     done <"$libdir/$pkg/$runDepsfile"
@@ -263,7 +263,7 @@ getPreCmdOpt() {
       exit 0
     ;;
     --version)
-      echo "sysup v$version"
+      echo "will v$version"
       exit 0
     ;;
     -*)

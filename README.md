@@ -1,4 +1,4 @@
-# sysup
+# `will`: Will Installs to Luser Land
 
 You log into a box.
 Are your favorite utilities/programs available?
@@ -7,30 +7,32 @@ Can you pester your sysadmin to install them all?
 Can you install them without privileges?
 Who actually wants to answer all these questions themselves?
 
-Sysup is not a package manager, but it can be taught how to check for available tools and install them preferably as an unprivileged user, all in a very minimal (i.e. portable) environment.
-If you need to write your own packages, it's incredibly simple:
-  I've built it in shell just to force me to keep it simple.
+Will _is not_ a package manager.
+It can check for the existence of things (something like autoconf), but it doesn't care where they came from.
+It can run install scripts, but it doesn't keep strict track of how to uninstall.
+It can warn you about missing dependencies, but it won't try to solve dependency problems.
+Really, it's more like an executable form of notes about how you set up your box(en).
+
+Will _is_ extremely minimal, and therefore should be extremely portable.
+It is written in a single shell script, which means I've been forced to keep the package format very simple.
+If you need to write your own packages, it should be remarkably easy.
 
 ## Get Started
 
 Install like so:
 ```
-wget -q 'https://raw.githubusercontent.com/Zankoku-Okuno/sysup/master/bin/sysupup.sh' -O - | sh
+wget -q 'https://raw.githubusercontent.com/Zankoku-Okuno/will/master/bin/willup.sh' -O - | sh
 ```
 If you don't trust it, read the source first: it's only a handful of lines of `sh`.
-By default, it installs to `~/bin`, but you can change that by exporting `SYSUP_BINDIR`.
+By default, it installs to `~/bin`, but you can change that by exporting `WILL_BINDIR`.
 
-  * `sysup info -a` to see what packages are known.
-  * `sysup info -as` to check availability of each package's utilities, file structures, versions, and so on.
-  * `sysup up <pkg names...>` to install packages (if possible)
+  * `will info -a` to see what packages are known.
+  * `will info -as` to check availability of each package's utilities, file structures, versions, and so on.
+  * `will up <pkg names...>` to install packages (if possible)
 
-You can also throw a `-C` flag at `sysup` and pipe to `less -R` to (e.g. `sysup -C info -sar | less -R`).
+You can also throw a `-C` flag at `will` and pipe to `less -R` to (e.g. `will -C info -sar | less -R`).
 
-Sysup is not a package manager.
-It can check for the existence of things (something like autoconf), but it doesn't care where they came from.
-It can run install scripts, but it doesn't keep the strictest track of 
-It can warn you about missing dependencies, but it won't solve any dependency problems for you.
-Really, it's more like an executable form of notes about how you set up your box(en).
+You might like to alias `wil` for `will` if you find yourself regularly missing the double-l.
 
 ## Concepts
 
@@ -64,7 +66,7 @@ The files you can place into a package are the following (all of these are optio
     An `alternates` file operates the same, but reports OK when _any_ listed package is OK.
     A package should only have one of `check.sh`, `collection`, or `alternates` included.
   * `install`: an executable that can install a package.
-    The environment variable `$SYSUP_GLOBAL` is set to `1` if the install should be system-wide or empty for local (i.e. the current user only).
+    The environment variable `$WILL_GLOBAL` is set to `1` if the install should be system-wide or empty for local (i.e. the current user only).
     The `pwd` will be the same as the package folder.
     Every file/folder that should be removed during uninstallation should be printed to stdout, one per line, preceded by a prefix:
       one of `[FILE] `, `[DIR] `, or `[DIR -r] ` (note the trailing space).

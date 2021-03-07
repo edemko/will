@@ -1,0 +1,5 @@
+#!/bin/sh
+set -e
+
+mkdir -p "$HOME/bin"
+chmod go-rwx "$HOME/bin"
