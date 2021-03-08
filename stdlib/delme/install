@@ -1,5 +1,0 @@
-#!/bin/sh
-set -e
-
-echo '[FILE]' "$HOME/delme"
-touch "$HOME/delme"

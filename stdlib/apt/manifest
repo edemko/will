@@ -1,2 +1,3 @@
 add-repository
 aptitude
+dpkg

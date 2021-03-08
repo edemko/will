@@ -1,0 +1,8 @@
+base/less
+posix/common
+shell/bash
+base/realpath
+base/watch
+base/hash
+base/service
+base/sudo

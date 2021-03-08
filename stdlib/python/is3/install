@@ -1,0 +1,5 @@
+#!/bin/sh
+
+installPath="$HOME/bin/python"
+
+ln -s "$(command -v python3)" "$installPath"
