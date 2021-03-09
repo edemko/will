@@ -7,3 +7,4 @@ base/su
 hash
 service
 sudo
+mktemp

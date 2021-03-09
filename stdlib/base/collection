@@ -6,3 +6,4 @@ base/watch
 base/hash
 base/service
 base/sudo
+base/mktemp

@@ -151,6 +151,7 @@ run_check() {
 }
 run_check1() {
   local pkg="$1"
+  local ec
   if [[ ! -e "$libdir/$pkg/$checkscript" ]]; then
     return 1
   fi
@@ -158,7 +159,21 @@ run_check1() {
     cd "$libdir/$pkg"
     exec sh "$checkscript"
   ) >/dev/null
-  return "$?"
+  ec="$?"
+  [ "$ec" -eq 0 ] || return "$ec"
+  # warn about any missing run-time dependencies, but carry on even if missing
+  if [[ -f "$libdir/$pkg/$runDepsfile" ]]; then
+    local dep
+    while IFS= read -r dep || [[ -n "$dep" ]]; do
+      dep="$(echo "$dep" | sed -e 's/^\s*//' -e 's/\s*$//')"
+      case "$dep" in
+        ''|'#'*) continue ;;
+        *)
+          run_check1 "$dep" || echo >&2 "$(guardTput bold)$(guardTput setaf 3)[WARN]$(guardTput sgr0) will $pkg: missing runtime dependency: $dep"
+        ;;
+      esac
+    done <"$libdir/$pkg/$runDepsfile"
+  fi
 }
 
 run_up() {
@@ -220,19 +235,6 @@ run_up1() {
   if ! run_check1 "$pkg"; then
     echo >&2 "install script did not bring up '$pkg'"
     return 1
-  fi
-  # warn about any missing run-time dependencies, but carry on even if missing
-  if [[ -f "$libdir/$pkg/$runDepsfile" ]]; then
-    local dep
-    while IFS= read -r dep || [[ -n "$dep" ]]; do
-      dep="$(echo "$dep" | sed -e 's/^\s*//' -e 's/\s*$//')"
-      case "$dep" in
-        ''|'#'*) continue ;;
-        *)
-          run_check1 "$dep" || echo >&2 "$(guardTput bold)$(guardTput setaf 3)[WARN]$(guardTput sgr0) will $pkg: missing runtime dependency: $dep"
-        ;;
-      esac
-    done <"$libdir/$pkg/$runDepsfile"
   fi
 }
 
