@@ -1,5 +1,4 @@
 posix/common
 shell/bash
 base/realpath
-base/truncate
 base-extras/tac

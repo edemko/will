@@ -188,8 +188,8 @@ run_up() {
       failPkgs+=" $pkg"
     fi
   done
-  if [[ "$okPkgs" -ne 0 ]]; then echo >&2 "the following packages installed successfully:$okPkgs"; fi
-  if [[ "$failPkgs" -ne 0 ]]; then die "[ERROR] the following packages failed to install:$failPkgs"; fi
+  if [[ -n "$okPkgs" ]]; then echo >&2 "the following packages installed successfully:$okPkgs"; fi
+  if [[ -n "$failPkgs" ]]; then die "[ERROR] the following packages failed to install:$failPkgs"; fi
 }
 run_up1() {
   local pkg=$1
