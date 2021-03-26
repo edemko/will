@@ -1,0 +1,9 @@
+#!/bin/sh
+set -e
+
+dlUrl='https://raw.githubusercontent.com/Zankoku-Okuno/skel/master/skel.sh'
+installPath="$HOME/bin/skel"
+
+echo "[FILE] $installPath"
+wget "$dlUrl" -O "$installPath"
+chmod +x "$installPath"

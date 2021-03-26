@@ -23,7 +23,7 @@ mkdir -p "$1"
   echo 'set -e'
   echo ''
   echo "dlUrl='$2'"
-  echo 'installPath="$HOME/bin/'"$1"
+  echo 'installPath="$HOME/bin/'"$1"'"'
   echo ''
   echo 'echo "[FILE] $installPath"'
   echo 'wget "$dlUrl" -O "$installPath"'
