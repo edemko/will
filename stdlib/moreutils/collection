@@ -1,0 +1,15 @@
+moreutils/chronic
+moreutils/combine
+moreutils/errno
+moreutils/ifdata
+moreutils/ifne
+moreutils/isutf8
+moreutils/lckdo
+moreutils/mispipe
+moreutils/parallel
+moreutils/pee
+moreutils/sponge
+moreutils/ts
+moreutils/vidir
+moreutils/vipe
+moreutils/zrun
