@@ -14,9 +14,14 @@ Global Options:
 
 Commands:
   info [options] <pkgs...>
-    check if package exists and list available actions
+    check if packages exist and list available actions
+    fail if any package does not exist
     -s, --scan    also check package is installed ok
     -a, --all     display info for every known package
+  check <pkgs...>
+    check if the package is installed (by running the check script)
+  up <pkgs...>
+    attempt to install packages
 '
 
 

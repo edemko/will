@@ -1,0 +1,14 @@
+#!/bin/sh
+set -e
+
+dlUrl='https://downloads.haskell.org/~ghcup/x86_64-linux-ghcup'
+installPath="$HOME/bin/ghcup"
+
+ghcupInstallOpinion="$HOME/.ghcup/bin"
+
+echo "[FILE] $ghcupInstallOpinion/ghcup"
+mkdir -p "$ghcupInstallOpinion"
+wget "$dlUrl" -O "$ghcupInstallOpinion/ghcup"
+chmod +x "$ghcupInstallOpinion/ghcup"
+
+ln -sv "$ghcupInstallOpinion/ghcup" "$installPath"
