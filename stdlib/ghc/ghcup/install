@@ -4,7 +4,7 @@ set -e
 dlUrl='https://downloads.haskell.org/~ghcup/x86_64-linux-ghcup'
 installPath="$HOME/.ghcup/bin/ghcup"
 
-echo "[FILE] $installPath"
-mkdir -p "$(basename "$installPath")"
+echo >&2 "[FILE] $installPath"
+mkdir -p "$(dirname "$installPath")"
 wget "$dlUrl" -O "$installPath"
 chmod +x "$installPath"
