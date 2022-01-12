@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+
+basePath="$HOME/bin/zig-0.9.0"
+altPath="$HOME/bin/zig"
+
+echo >&2 "[FILE] $altPath"
+ln -s "$basePath" "$altPath"

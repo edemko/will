@@ -1,0 +1,15 @@
+#!/bin/bash
+set -e
+
+dlUrl='https://ziglang.org/download/0.9.0/zig-linux-x86_64-0.9.0.tar.xz'
+zipFile="$HOME/bin/zig-linux-x86_64-0.9.0.tar.xz"
+zipDir="$HOME/bin/zig-linux-x86_64-0.9.0"
+installPath="$HOME/bin/zig-0.9.0"
+
+echo "[FILE] $zipFile"
+wget "$dlUrl" -O "$zipFile"
+echo "[DIR] $zipDir"
+pushd "$HOME/bin" ; tar -xvf "$zipFile" ; popd
+echo "[UNFILE] $zipFile"
+echo "[FILE] $installPath"
+ln -s "$zipDir/zig" "$installPath"
