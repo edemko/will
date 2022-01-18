@@ -21,7 +21,7 @@ If you need to write your own packages, it should be remarkably easy.
 
 Install like so:
 ```
-wget -q 'https://raw.githubusercontent.com/Zankoku-Okuno/will/master/bin/willup.sh' -O - | sh
+wget -q 'https://raw.githubusercontent.com/edemko/will/master/bin/willup.sh' -O - | sh
 ```
 If you don't trust it, read the source first: it's only a handful of lines of `sh`.
 By default, it installs to `~/bin`, but you can change that by exporting `WILL_BINDIR`.
@@ -30,9 +30,7 @@ By default, it installs to `~/bin`, but you can change that by exporting `WILL_B
   * `will info -as` to check availability of each package's utilities, file structures, versions, and so on.
   * `will up <pkg names...>` to install packages (if possible)
 
-You can also throw a `-C` flag at `will` and pipe to `less -R` to (e.g. `will -C info -sar | less -R`).
-
-You might like to alias `wil` for `will` if you find yourself regularly missing the double-l.
+You can also throw a `-C` flag at `will` and pipe to `less -R` to paginate (e.g. `will -C info -sar | less -R`).
 
 ## Concepts
 
@@ -61,7 +59,7 @@ The files you can place into a package are the following (all of these are optio
   * `check.sh`: a Bourne shell script that should exit successfully only if the package utility is available, no matter how it was installed.
     Note that this will be executed with `sh $pkg/check.sh`, so it need not be executable, but also be aware that `sh` might not link to `bash` on all your systems!
     The `pwd` will be the same as the package folder.
-  * `collection` and `alternates`: a package might delgate itself entirely to other packages.
+  * `collection` and `alternates`: a package might delegate itself entirely to other packages.
     If a `collection` file is present, all packages listed there (one per line) must be OK for this package to report OK.
     An `alternates` file operates the same, but reports OK when _any_ listed package is OK.
     A package should only have one of `check.sh`, `collection`, or `alternates` included.

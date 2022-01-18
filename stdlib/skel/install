@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-dlUrl='https://raw.githubusercontent.com/Zankoku-Okuno/skel/master/skel.sh'
+dlUrl='https://raw.githubusercontent.com/edemko/skel/master/skel.sh'
 installPath="$HOME/bin/skel"
 
 echo "[FILE] $installPath"

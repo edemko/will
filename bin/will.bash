@@ -4,7 +4,7 @@ set -e
 # FIXME: arg parsing should detect `--` as end-of-options
 # FIXME: global options should be available for use after the command
 
-version=0.1.0
+version=0.2.0
 
 usage="usage $0 [global options] <command> [args]"'
 
@@ -36,7 +36,7 @@ main() {
 ###### Command Implementations ######
 
 datadir="${XDG_DATA_DIR:-$HOME/.local/share}/will"
-  libdir="$datadir/lib"
+  libdir="$datadir/libs"
   logdir="$datadir/logs"
 datadir="${XDG_DATA_DIR:-$HOME/.local/share}/will"
 confdir="${XDG_CONFIG_HOME:-$HOME/.config}/will"
@@ -59,8 +59,17 @@ run_info() {
   local exitCode=0
   if [[ -n "$all" ]]; then
     cd "$libdir"
-    for pkg in *; do
-      run_info1 "$pkg" || :
+    # FIXME look through libraries, and remember not to shadow
+    local found=' '
+    for lib in *; do
+      for pkg in "$lib/"*; do
+        local pkgName
+        pkgName="$(basename "$pkg")"
+        if ! echo "$found" | grep -qF " $pkgName "; then
+          run_info1 "$pkgName" || :
+          found+="$pkgName "
+        fi
+      done
     done
     exit 0
   else
@@ -70,79 +79,80 @@ run_info() {
   fi
 }
 run_info1() {
-  local pkg="$1"
-  if [[ -d "$libdir/$pkg" ]]; then
-    local ok check collection alternates up down installDeps runDeps submodules
-    local extraOutput=''
-    # Q: is there the ability to check the install?
-    check="$([[ -f "$libdir/$pkg/$checkscript" ]] && echo ' check')"
-    # Q: Is this a collection or alternates package?
-    collection="$([[ -f "$libdir/$pkg/$collectionfile" ]] && echo ' collection')"
-    alternates="$([[ -f "$libdir/$pkg/$alternatesfile" ]] && echo ' alternates')"
-    # Q: does this module have submodules?
-    submodules="$([[ -f "$libdir/$pkg/$submodulelist" ]] && echo ' submodules')"
-    if [[ -n "$scan" ]]; then
-      if [[ -n "$check" ]]; then
-    # Q: when scanning and can check, report install status
-        local exitCode=0
-        extraOutput+="$(run_check1 "$pkg" 2>&1)"
-        exitCode="$?"
-        if [ $exitCode -eq 0 ]; then
-          ok=" $(guardTput setaf 2)OK$(guardTput sgr0)"
-        else
-          ok=" $(guardTput bold)$(guardTput setaf 1)NO$(guardTput sgr0)"
-        fi
-      elif [[ -n "$collection" ]]; then
-        local missing=''
-        while IFS= read -r line || [[ -n "$line" ]]; do
-          line="$(echo "$line" | sed -e 's/^\s*//' -e 's/\s*$//')"
-          case "$line" in
-            ''|'#'*) continue ;;
-            *)
-              if ! run_check1 "$line" 2>/dev/null; then
-                missing+=" $line"
-              fi
-            ;;
-          esac
-        done <"$libdir/$pkg/$collectionfile"
-        if [[ -z "$missing" ]]; then
-          ok=" $(guardTput setaf 2)OK$(guardTput sgr0)"
-        else
-          ok=" $(guardTput bold)$(guardTput setaf 1)NO$(guardTput sgr0)"
-          extraOutput+="packages missing:$missing"
-        fi
-      elif [[ -n "$alternates" ]]; then
-        die "unimplemented: alternates packages"
+  local pkgName="$1"
+  local pkg
+  pkg="$(findPkg "$pkgName")"
+  if [ -z "$pkg" ]; then
+    echo >&2 "no such package found: $pkgName"
+    return 1
+  fi
+  local ok check collection alternates up down installDeps runDeps submodules
+  local extraOutput=''
+  # Q: is there the ability to check the install?
+  check="$([[ -f "$pkg/$checkscript" ]] && echo ' check')"
+  # Q: Is this a collection or alternates package?
+  collection="$([[ -f "$pkg/$collectionfile" ]] && echo ' collection')"
+  alternates="$([[ -f "$pkg/$alternatesfile" ]] && echo ' alternates')"
+  # Q: does this module have submodules?
+  submodules="$([[ -f "$pkg/$submodulelist" ]] && echo ' submodules')"
+  if [[ -n "$scan" ]]; then
+    if [[ -n "$check" ]]; then
+  # Q: when scanning and can check, report install status
+      local exitCode=0
+      extraOutput+="$(run_check1 "$pkgName" 2>&1)"
+      exitCode="$?"
+      if [ $exitCode -eq 0 ]; then
+        ok=" $(guardTput setaf 2)OK$(guardTput sgr0)"
       else
-        ok=" $(guardTput setaf 6)--$(guardTput sgr0)"
+        ok=" $(guardTput bold)$(guardTput setaf 1)NO$(guardTput sgr0)"
       fi
-    fi
-    # Q: is there an install script?
-    up="$([[ -x "$libdir/$pkg/$installscript" ]] && echo ' up')"
-    # TODO Q: is there an install log for uninstalling?
-    # Q: are there any dependencies?
-    installDeps="$([[ -f "$libdir/$pkg/$installDepsfile" ]] && echo ' deps.up')"
-    runDeps="$([[ -f "$libdir/$pkg/$runDepsfile" ]] && echo ' deps.run')"
-
-    echo "$pkg$ok$check$collection$alternates$up$down$runDeps$installDeps$submodules"
-    if [ -n "$extraOutput" ]; then
-      sed 's/^/  /' <(echo "$extraOutput") >&2
-    fi
-    # recurse into submodules if we're scanning with recursion on
-    if [[ -n "$submodules" && -n "$scan" && -n "$recursive" ]]; then
+    elif [[ -n "$collection" ]]; then
+      local missing=''
       while IFS= read -r line || [[ -n "$line" ]]; do
         line="$(echo "$line" | sed -e 's/^\s*//' -e 's/\s*$//')"
         case "$line" in
           ''|'#'*) continue ;;
           *)
-            run_info1 "$pkg/$line"
+            if ! run_check1 "$line" 2>/dev/null; then
+              missing+=" $line"
+            fi
           ;;
         esac
-      done <"$libdir/$pkg/$submodulelist"
+      done <"$pkg/$collectionfile"
+      if [[ -z "$missing" ]]; then
+        ok=" $(guardTput setaf 2)OK$(guardTput sgr0)"
+      else
+        ok=" $(guardTput bold)$(guardTput setaf 1)NO$(guardTput sgr0)"
+        extraOutput+="packages missing:$missing"
+      fi
+    elif [[ -n "$alternates" ]]; then
+      die "unimplemented: alternates packages"
+    else
+      ok=" $(guardTput setaf 6)--$(guardTput sgr0)"
     fi
-    return 0
-  else
-    return 1
+  fi
+  # Q: is there an install script?
+  up="$([[ -x "$pkg/$installscript" ]] && echo ' up')"
+  # TODO Q: is there an install log for uninstalling?
+  # Q: are there any dependencies?
+  installDeps="$([[ -f "$pkg/$installDepsfile" ]] && echo ' deps.up')"
+  runDeps="$([[ -f "$pkg/$runDepsfile" ]] && echo ' deps.run')"
+
+  echo "$pkgName$ok$check$collection$alternates$up$down$runDeps$installDeps$submodules"
+  if [ -n "$extraOutput" ]; then
+    sed 's/^/  /' <(echo "$extraOutput") >&2
+  fi
+  # recurse into submodules if we're scanning with recursion on
+  if [[ -n "$submodules" && -n "$scan" && -n "$recursive" ]]; then
+    while IFS= read -r line || [[ -n "$line" ]]; do
+      line="$(echo "$line" | sed -e 's/^\s*//' -e 's/\s*$//')"
+      case "$line" in
+        ''|'#'*) continue ;;
+        *)
+          run_info1 "$pkgName/$line"
+        ;;
+      esac
+    done <"$pkg/$submodulelist"
   fi
 }
 
@@ -155,29 +165,35 @@ run_check() {
   done
 }
 run_check1() {
-  local pkg="$1"
+  local pkgName="$1"
+  local pkg
+  pkg="$(findPkg "$pkgName")"
+  if [ -z "$pkgName" ]; then
+    echo >&2 "no such package found: $pkgName"
+    return 1
+  fi
   local ec
-  if [[ ! -e "$libdir/$pkg/$checkscript" ]]; then
+  if [[ ! -e "$pkg/$checkscript" ]]; then
     return 1
   fi
   (
-    cd "$libdir/$pkg"
+    cd "$pkg"
     exec sh "$checkscript"
   ) >/dev/null
   ec="$?"
   [ "$ec" -eq 0 ] || return "$ec"
   # warn about any missing run-time dependencies, but carry on even if missing
-  if [[ -f "$libdir/$pkg/$runDepsfile" ]]; then
+  if [[ -f "$pkg/$runDepsfile" ]]; then
     local dep
     while IFS= read -r dep || [[ -n "$dep" ]]; do
       dep="$(echo "$dep" | sed -e 's/^\s*//' -e 's/\s*$//')"
       case "$dep" in
         ''|'#'*) continue ;;
         *)
-          run_check1 "$dep" || echo >&2 "$(guardTput bold)$(guardTput setaf 3)[WARN]$(guardTput sgr0) will $pkg: missing runtime dependency: $dep"
+          run_check1 "$dep" || echo >&2 "$(guardTput bold)$(guardTput setaf 3)[WARN]$(guardTput sgr0) will $pkgName: missing runtime dependency: $dep"
         ;;
       esac
-    done <"$libdir/$pkg/$runDepsfile"
+    done <"$pkg/$runDepsfile"
   fi
 }
 
@@ -197,48 +213,55 @@ run_up() {
   if [[ -n "$failPkgs" ]]; then die "[ERROR] the following packages failed to install:$failPkgs"; fi
 }
 run_up1() {
-  local pkg=$1
   local exitCode
+  local pkgName="$1"
+  local pkg
+  pkg="$(findPkg "$pkgName")"
+  # the package must be found
+  if [ -z "$pkg" ]; then
+    echo >&2 "no such package found: $1"
+    return 1
+  fi
   # the package must be installable
-  if [[ ! -x "$libdir/$pkg/$installscript" ]]; then
-    echo >&2 "no install script for '$pkg'"
+  if [[ ! -x "$pkg/$installscript" ]]; then
+    echo >&2 "no install script for '$pkgName'"
     return 1
   fi
   # the package must be checkable
-  if [[ ! -f "$libdir/$pkg/$checkscript" ]]; then
-    echo >&2 "no check script for '$pkg'"
+  if [[ ! -f "$pkg/$checkscript" ]]; then
+    echo >&2 "no check script for '$pkgName'"
     return 1
   fi
   # skip if already available
-  if run_check1 "$pkg"; then
-    echo >&2 "skipping already-up package '$pkg'"
+  if run_check1 "$pkgName"; then
+    echo >&2 "skipping already-up package '$pkgName'"
     return 0
   fi
   # warn about any missing install-time dependencies, but carry on even if missing
-  if [[ -f "$libdir/$pkg/$installDepsfile" ]]; then
+  if [[ -f "$pkg/$installDepsfile" ]]; then
     local dep
     while IFS= read -r dep || [[ -n "$dep" ]]; do
       dep="$(echo "$dep" | sed -e 's/^\s*//' -e 's/\s*$//')"
       case "$dep" in
         ''|'#'*) continue ;;
         *)
-          run_check1 "$dep" || echo >&2 "$(guardTput bold)$(guardTput setaf 3)[WARN]$(guardTput sgr0) will $pkg: missing install dependency: $dep"
+          run_check1 "$dep" || echo >&2 "$(guardTput bold)$(guardTput setaf 3)[WARN]$(guardTput sgr0) will $pkgName: missing install dependency: $dep"
         ;;
       esac
-    done <"$libdir/$pkg/$installDepsfile"
+    done <"$pkg/$installDepsfile"
   fi
-  mkdir -p "$logdir/$pkg"
+  mkdir -p "$logdir/$pkgName"
   (
-    cd "$libdir/$pkg"
+    cd "$pkg"
     # NOTE the following redirects are informed by https://serverfault.com/a/63708
-    exec "./$installscript" 3>&1 1>"$logdir/$pkg/installed-files.log" 2>&3 | tee "$logdir/$pkg/error.log" >&2
+    exec "./$installscript" 3>&1 1>"$logdir/$pkgName/installed-files.log" 2>&3 | tee "$logdir/$pkgName/error.log" >&2
   )
   # make sure the install script succeeded
   exitCode="$?"
   if [[ "$exitCode" -ne 0 ]]; then return "$exitCode"; fi
   # make sure the install script made the package available
-  if ! run_check1 "$pkg"; then
-    echo >&2 "install script did not bring up '$pkg'"
+  if ! run_check1 "$pkgName"; then
+    echo >&2 "install script did not bring up '$pkgName'"
     return 1
   fi
 }
@@ -249,19 +272,23 @@ run_update() {
   # set up working space
   tmpdir="/tmp/will-$(date '+%Y-%m-%d-%H-%M-%S')"
   trap "rm -rf $tmpdir" EXIT
-  mkdir -p "$tmpdir/new"
+  mkdir "$tmpdir"
+  mkdir "$tmpdir/new"
+  mkdir "$tmpdir/repos"
   # build each source into the new library directory
   while IFS= read -r source || [[ -n "$source" ]]; do
     source="$(echo "$source" | sed -e 's/^\s*//' -e 's/\s*$//')"
+    dest="$(echo "$source" | cut -d' ' -f 3)"
     case "$source" in
       ''|'#'*) continue ;;
       'git -d='*)
-        if [[ "$source_i" -gt 0 ]]; then die "unimplemented: multipe library sources"; fi
         local repo subdir
-        repo="$(echo $source | cut -d' ' -f 3)"
+        repo="$(echo "$source" | cut -d' ' -f 4)"
         subdir="$(echo "$source" | cut -d' ' -f 2 | cut -c 4-)"
-        git clone "$repo" "$tmpdir/$source_i"
-        cp -r "$tmpdir/$source_i/$subdir/"* "$tmpdir/new" # FIXME be smarter about merging libraries
+        echo >&2 "$repo $subdir -> $dest"
+        git clone "$repo" "$tmpdir/repos/$source_i"
+        mkdir "$tmpdir/new/$dest"
+        cp -r "$tmpdir/repos/$source_i/$subdir/"* "$tmpdir/new/$dest" # FIXME be smarter about merging libraries
       ;;
       'git '*) die "unimplemented: plain git source" ;;
       'file '*) die "unimplemented: local file source" ;;
@@ -284,6 +311,20 @@ run_update() {
   fi
 }
 
+###### Helper Functions ######
+
+findPkg() {
+  local pkg="$1"
+  local trace=''
+  for lib in "$libdir"/*; do
+    trace+="$(printf '%s\n' "$lib" "$lib/$pkg")"
+    if [[ -d "$lib/$pkg" ]]; then
+      echo "$lib/$pkg"
+      return 0
+    fi
+  done
+  echo >&2 "$trace"
+}
 
 ###### Parse Arguments ######
 
@@ -389,9 +430,6 @@ guardTput() {
 dieUsage() {
   echo >&2 "$usage"
   exit 0
-}
-dieVersion() {
-  echo "$version"
 }
 
 die() {

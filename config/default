@@ -1,1 +1,1 @@
-git -d=stdlib https://github.com/Zankoku-Okuno/will
+git -d=stdlib 000-std https://github.com/edemko/will

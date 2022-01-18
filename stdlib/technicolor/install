@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-dlUrl='https://raw.githubusercontent.com/Zankoku-Okuno/technicolor/master/technicolor'
+dlUrl='https://raw.githubusercontent.com/edemko/technicolor/master/technicolor'
 installPath="$HOME/bin/technicolor"
 
 echo "[FILE] $installPath"

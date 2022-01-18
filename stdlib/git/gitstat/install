@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-dlUrl='https://raw.githubusercontent.com/Zankoku-Okuno/gitstat/master/gitstat.sh'
+dlUrl='https://raw.githubusercontent.com/edemko/gitstat/master/gitstat.sh'
 installPath="$HOME/bin/gitstat"
 
 echo "[FILE] $installPath"
