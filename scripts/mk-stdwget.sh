@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+echo >&2 "[WARNING] deprecated in favor of using \`skel mk will wget\`"
+
 if [[ "$1" = "--help" ]]; then
   echo >&2 "usage: $0 <command> <url>"
   echo >&2 "  create a package in this directory that just checks for the existence of the named command"

@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+echo >&2 "[WARNING] deprecated in favor of using \`skel mk will stdkg\`"
+
 if [[ "$#" -ne 1 ]]; then
   echo >&2 "usage: $0 <command>"
   exit 1

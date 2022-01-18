@@ -75,3 +75,12 @@ The files you can place into a package are the following (all of these are optio
     This is used when scanning recursively to determine which sub-folders are actually expected to contain a package.
   * Any other file/folder can be included as well.
     This can provide (e.g.) install files, helper scripts, additional documentation, and so on.
+
+## Setup Convenience
+
+If you have [`skel`](https://github.com/edemko/skel) installed, then you can use the template packages in `scripts/skel` to set up some common packages.
+  * `stdpkg`: just test for the existence of a command
+  * `wget`: test for the command as in `stdpkg`, but also creates an install script that `wget`s a file into `~/bin`.
+  * `version`: sets up `vVERSION` and `isVERSION` submodules.
+    You have to alter up the manifest yourself.
+    WARNING: the basic version check in `isVERSION/check.sh` may not be accurate; you should verify the regex after filling the template.

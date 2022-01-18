@@ -1,0 +1,9 @@
+#!/bin/sh
+set -e
+
+dlUrl='@@@DL_URL@@@'
+installPath="$HOME/bin/@@@INSTALL_NAME@@@"
+
+echo "[FILE] $installPath"
+wget "$dlUrl" -O "$installPath"
+chmod +x "$installPath"
