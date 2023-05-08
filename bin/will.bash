@@ -158,9 +158,6 @@ run_info1() {
 
 run_check() {
   for pkg in "${pkgs[@]}"; do
-    if [[ ! -e "$libdir/$pkg/$checkscript" ]]; then
-      die "no check script for '$pkg'"
-    fi
     run_check1 "$pkg" || die
   done
 }
@@ -174,6 +171,7 @@ run_check1() {
   fi
   local ec
   if [[ ! -e "$pkg/$checkscript" ]]; then
+    die "no check script for '$pkg'"
     return 1
   fi
   (
@@ -224,7 +222,11 @@ run_up1() {
   fi
   # the package must be installable
   if [[ ! -x "$pkg/$installscript" ]]; then
-    echo >&2 "no install script for '$pkgName'"
+    if [[ -f "$pkg/$installscript" ]]; then
+      echo >&2 "install script for '$pkgName' is not executable"
+    else
+      echo >&2 "no install script for '$pkgName'"
+    fi
     return 1
   fi
   # the package must be checkable
